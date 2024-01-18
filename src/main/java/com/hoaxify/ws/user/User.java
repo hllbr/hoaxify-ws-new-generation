@@ -20,7 +20,7 @@ public class User {
     @GeneratedValue
     long id;
 
-    @NotBlank
+    @NotBlank(message = "{Hoaxify.Constraint.UserName.NotBlank}")
     @Size(min = 5, max = 255)
     String username;
 
@@ -30,7 +30,7 @@ public class User {
     String email;
 
     @Size(min = 8, max = 55)
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$",message = "{Hoaxify.Constraint.Password.Pattern}")
     String password;
 
     public long getId() {
