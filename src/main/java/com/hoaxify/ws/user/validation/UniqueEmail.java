@@ -13,7 +13,7 @@ import jakarta.validation.Payload;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UniqueEmail {
 
-    String message() default "Email in use";
+    String message() default "{Hoaxify.Constraint.Email.NotUnique}";
 
     Class<?>[] groups() default {};
 
