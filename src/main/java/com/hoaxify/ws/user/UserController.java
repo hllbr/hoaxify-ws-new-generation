@@ -1,11 +1,8 @@
 package com.hoaxify.ws.user;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -18,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hoaxify.ws.error.ApiError;
 import com.hoaxify.ws.shared.GenericMessage;
 import com.hoaxify.ws.shared.Messages;
+import com.hoaxify.ws.user.dto.UserCreate;
+import com.hoaxify.ws.user.exception.ActivationNotificationException;
 import com.hoaxify.ws.user.exception.NotUniqueEmailException;
 
 import jakarta.validation.Valid;
@@ -28,13 +27,10 @@ public class UserController {
         @Autowired
         UserService userService;
 
-        // @Autowired
-        // MessageSource messageSource;
-
         @PostMapping("/api/v1/users")
-        GenericMessage createUser(@Valid @RequestBody User user) {
-                userService.save(user);
-                String message = Messages.getMeesageForLocale("hoaxify.create.user.success.message",
+        GenericMessage createUser(@Valid @RequestBody UserCreate user) {
+                userService.save(user.toUser());
+                String message = Messages.getMessageForLocale("hoaxify.create.user.success.message",
                                 LocaleContextHolder.getLocale());
                 return new GenericMessage(message);
         }
@@ -43,7 +39,7 @@ public class UserController {
         ResponseEntity<ApiError> handleMethodNotValidException(MethodArgumentNotValidException exception) {
                 ApiError apiError = new ApiError();
                 apiError.setPath("/api/v1/users");
-                String message = Messages.getMeesageForLocale("hoaxify.error.validation",
+                String message = Messages.getMessageForLocale("hoaxify.error.validation",
                                 LocaleContextHolder.getLocale());
                 apiError.setMessage(message);
                 apiError.setStatus(400);
@@ -62,6 +58,16 @@ public class UserController {
                 apiError.setStatus(400);
                 apiError.setValidationErrors(exception.getValidationErrors());
 
-                return ResponseEntity.badRequest().body(apiError);
+                return ResponseEntity.status(400).body(apiError);
+        }
+
+        @ExceptionHandler(ActivationNotificationException.class)
+        ResponseEntity<ApiError> handleActivationNotificationException(ActivationNotificationException exception) {
+                ApiError apiError = new ApiError();
+                apiError.setPath("/api/v1/users");
+                apiError.setMessage(exception.getMessage());
+                apiError.setStatus(502);//bad get way
+
+                return ResponseEntity.status(502).body(apiError);
         }
 }
