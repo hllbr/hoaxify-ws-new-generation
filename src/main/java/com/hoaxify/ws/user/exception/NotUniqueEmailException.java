@@ -10,11 +10,11 @@ import com.hoaxify.ws.shared.Messages;
 public class NotUniqueEmailException extends RuntimeException {
 
     public NotUniqueEmailException() {
-        super(Messages.getMeesageForLocale("hoaxify.error.validation", LocaleContextHolder.getLocale()));
+        super(Messages.getMessageForLocale("hoaxify.error.validation", LocaleContextHolder.getLocale()));
     }
 
     public Map<String, String> getValidationErrors() {
         return Collections.singletonMap("email",
-                Messages.getMeesageForLocale("hoaxify.constraint.email.notunique", LocaleContextHolder.getLocale()));
+                Messages.getMessageForLocale("hoaxify.constraint.email.notunique", LocaleContextHolder.getLocale()));
     }
 }
