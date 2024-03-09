@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +19,7 @@ import com.hoaxify.ws.shared.GenericMessage;
 import com.hoaxify.ws.shared.Messages;
 import com.hoaxify.ws.user.dto.UserCreate;
 import com.hoaxify.ws.user.exception.ActivationNotificationException;
+import com.hoaxify.ws.user.exception.InvalidTokenException;
 import com.hoaxify.ws.user.exception.NotUniqueEmailException;
 
 import jakarta.validation.Valid;
@@ -30,8 +33,18 @@ public class UserController {
         @PostMapping("/api/v1/users")
         GenericMessage createUser(@Valid @RequestBody UserCreate user) {
                 userService.save(user.toUser());
-                String message = Messages.getMessageForLocale("hoaxify.create.user.success.message",
-                                LocaleContextHolder.getLocale());
+                String message = Messages
+                                .getMessageForLocale("hoaxify.create.user.success.message",
+                                                LocaleContextHolder.getLocale());
+                return new GenericMessage(message);
+        }
+
+        @PatchMapping("/api/v1/users/{token}/active")
+        GenericMessage activateUser(@PathVariable String token) {
+                userService.activateUser(token);
+                String message = Messages
+                                .getMessageForLocale("hoaxify.activate.user.success.message",
+                                                LocaleContextHolder.getLocale());
                 return new GenericMessage(message);
         }
 
@@ -66,8 +79,18 @@ public class UserController {
                 ApiError apiError = new ApiError();
                 apiError.setPath("/api/v1/users");
                 apiError.setMessage(exception.getMessage());
-                apiError.setStatus(502);//bad get way
+                apiError.setStatus(502);// bad get way
 
                 return ResponseEntity.status(502).body(apiError);
+        }
+
+        @ExceptionHandler(InvalidTokenException.class)
+        ResponseEntity<ApiError> handleInvalidTokenException(InvalidTokenException exception) {
+                ApiError apiError = new ApiError();
+                apiError.setPath("/api/v1/users");
+                apiError.setMessage(exception.getMessage());
+                apiError.setStatus(400);
+
+                return ResponseEntity.status(400).body(apiError);
         }
 }
