@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.hoaxify.ws.email.EmailService;
 import com.hoaxify.ws.user.exception.ActivationNotificationException;
+import com.hoaxify.ws.user.exception.InvalidTokenException;
 import com.hoaxify.ws.user.exception.NotUniqueEmailException;
 
 import jakarta.transaction.Transactional;
@@ -26,7 +27,6 @@ public class UserService {
 
     PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-
     @Transactional(rollbackOn = MailException.class)
     public void save(User user) {
         try {
@@ -39,6 +39,16 @@ public class UserService {
         } catch (MailException mailException) {
             throw new ActivationNotificationException();
         }
+    }
+
+    public void activateUser(String token) {
+        User inDB = userRepository.findByActivationToken(token);
+        if (inDB == null) {
+            throw new InvalidTokenException();
+        }
+        inDB.setActive(true);
+        inDB.setActivationToken(null);
+        userRepository.save(inDB);
     }
 
 }

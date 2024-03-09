@@ -6,15 +6,14 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-
 @JsonInclude(value = Include.NON_NULL)
 public class ApiError {
 
     private int status;
 
-    private String path;
-
     private String message;
+
+    private String path;
 
     private long timeStamp = new Date().getTime();
 
@@ -36,20 +35,20 @@ public class ApiError {
         this.timeStamp = timeStamp;
     }
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
     public String getPath() {
         return path;
     }
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public int getStatus() {
