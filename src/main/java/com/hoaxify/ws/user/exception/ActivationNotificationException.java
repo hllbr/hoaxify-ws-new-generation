@@ -8,7 +8,6 @@ public class ActivationNotificationException extends RuntimeException {
 
     public ActivationNotificationException() {
         super(Messages.getMessageForLocale("hoaxify.create.user.failure", LocaleContextHolder.getLocale()));
-
     }
 
 }
