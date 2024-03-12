@@ -6,7 +6,8 @@ import com.hoaxify.ws.shared.Messages;
 
 public class InvalidTokenException extends RuntimeException {
     public InvalidTokenException() {
-        super(Messages.getMessageForLocale("hoaxify.activate.user.invalid.token",
-                LocaleContextHolder.getLocale()));
+        super(Messages
+                .getMessageForLocale("hoaxify.activate.user.invalid.token",
+                        LocaleContextHolder.getLocale()));
     }
 }

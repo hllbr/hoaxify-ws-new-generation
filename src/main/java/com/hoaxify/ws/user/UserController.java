@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hoaxify.ws.error.ApiError;
@@ -36,7 +39,8 @@ public class UserController {
         GenericMessage createUser(@Valid @RequestBody UserCreate user) {
                 userService.save(user.toUser());
                 String message = Messages
-                                .getMessageForLocale("hoaxify.create.user.success.message",
+                                .getMessageForLocale(
+                                                "hoaxify.create.user.success.message",
                                                 LocaleContextHolder.getLocale());
                 return new GenericMessage(message);
         }
@@ -45,33 +49,44 @@ public class UserController {
         GenericMessage activateUser(@PathVariable String token) {
                 userService.activateUser(token);
                 String message = Messages
-                                .getMessageForLocale("hoaxify.activate.user.success.message",
+                                .getMessageForLocale(
+                                                "hoaxify.activate.user.success.message",
                                                 LocaleContextHolder.getLocale());
                 return new GenericMessage(message);
         }
 
         @GetMapping("/api/v1/users")
-        List<User> getUsers() {
-                return userService.getUsers();
+        Page<User> getUsers(Pageable page) {
+                return userService.getUsers(page);
         }
 
         @ExceptionHandler(MethodArgumentNotValidException.class)
-        ResponseEntity<ApiError> handleMethodNotValidException(MethodArgumentNotValidException exception) {
+        ResponseEntity<ApiError> handleMethodNotValidException(
+                        MethodArgumentNotValidException exception) {
                 ApiError apiError = new ApiError();
                 apiError.setPath("/api/v1/users");
-                String message = Messages.getMessageForLocale("hoaxify.error.validation",
+                String message = Messages.getMessageForLocale(
+                                "hoaxify.error.validation",
                                 LocaleContextHolder.getLocale());
                 apiError.setMessage(message);
                 apiError.setStatus(400);
-                var validationMapErrors = exception.getBindingResult().getFieldErrors().stream()
-                                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage,
-                                                (existing, replacing) -> existing));
+                var validationMapErrors = exception
+                                .getBindingResult()
+                                .getFieldErrors()
+                                .stream()
+                                .collect(
+                                                Collectors
+                                                                .toMap(
+                                                                                FieldError::getField,
+                                                                                FieldError::getDefaultMessage,
+                                                                                (existing, replacing) -> existing));
                 apiError.setValidationErrors(validationMapErrors);
                 return ResponseEntity.badRequest().body(apiError);
         }
 
         @ExceptionHandler(NotUniqueEmailException.class)
-        ResponseEntity<ApiError> handleNotUniqueEmailException(NotUniqueEmailException exception) {
+        ResponseEntity<ApiError> handleNotUniqueEmailException(
+                        NotUniqueEmailException exception) {
                 ApiError apiError = new ApiError();
                 apiError.setPath("/api/v1/users");
                 apiError.setMessage(exception.getMessage());
@@ -82,7 +97,8 @@ public class UserController {
         }
 
         @ExceptionHandler(ActivationNotificationException.class)
-        ResponseEntity<ApiError> handleActivationNotificationException(ActivationNotificationException exception) {
+        ResponseEntity<ApiError> handleActivationNotificationException(
+                        ActivationNotificationException exception) {
                 ApiError apiError = new ApiError();
                 apiError.setPath("/api/v1/users");
                 apiError.setMessage(exception.getMessage());
@@ -92,7 +108,8 @@ public class UserController {
         }
 
         @ExceptionHandler(InvalidTokenException.class)
-        ResponseEntity<ApiError> handleInvalidTokenException(InvalidTokenException exception) {
+        ResponseEntity<ApiError> handleInvalidTokenException(
+                        InvalidTokenException exception) {
                 ApiError apiError = new ApiError();
                 apiError.setPath("/api/v1/users");
                 apiError.setMessage(exception.getMessage());
