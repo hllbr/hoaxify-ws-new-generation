@@ -27,7 +27,6 @@ import com.hoaxify.ws.user.exception.InvalidTokenException;
 import com.hoaxify.ws.user.exception.NotFoundException;
 import com.hoaxify.ws.user.exception.NotUniqueEmailException;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
@@ -67,72 +66,4 @@ public class UserController {
                 return new UserDTO(userService.getUser(id));
         }
 
-        @ExceptionHandler(MethodArgumentNotValidException.class)
-        ResponseEntity<ApiError> handleMethodNotValidException(
-                        MethodArgumentNotValidException exception) {
-                ApiError apiError = new ApiError();
-                apiError.setPath("/api/v1/users");
-                String message = Messages.getMessageForLocale(
-                                "hoaxify.error.validation",
-                                LocaleContextHolder.getLocale());
-                apiError.setMessage(message);
-                apiError.setStatus(400);
-                var validationMapErrors = exception
-                                .getBindingResult()
-                                .getFieldErrors()
-                                .stream()
-                                .collect(
-                                                Collectors
-                                                                .toMap(
-                                                                                FieldError::getField,
-                                                                                FieldError::getDefaultMessage,
-                                                                                (existing, replacing) -> existing));
-                apiError.setValidationErrors(validationMapErrors);
-                return ResponseEntity.badRequest().body(apiError);
-        }
-
-        @ExceptionHandler(NotUniqueEmailException.class)
-        ResponseEntity<ApiError> handleNotUniqueEmailException(
-                        NotUniqueEmailException exception) {
-                ApiError apiError = new ApiError();
-                apiError.setPath("/api/v1/users");
-                apiError.setMessage(exception.getMessage());
-                apiError.setStatus(400);
-                apiError.setValidationErrors(exception.getValidationErrors());
-
-                return ResponseEntity.status(400).body(apiError);
-        }
-
-        @ExceptionHandler(ActivationNotificationException.class)
-        ResponseEntity<ApiError> handleActivationNotificationException(
-                        ActivationNotificationException exception) {
-                ApiError apiError = new ApiError();
-                apiError.setPath("/api/v1/users");
-                apiError.setMessage(exception.getMessage());
-                apiError.setStatus(502);// bad get way
-
-                return ResponseEntity.status(502).body(apiError);
-        }
-
-        @ExceptionHandler(InvalidTokenException.class)
-        ResponseEntity<ApiError> handleInvalidTokenException(
-                        InvalidTokenException exception, HttpServletRequest request) {
-                ApiError apiError = new ApiError();
-                apiError.setPath(request.getRequestURI());
-                apiError.setMessage(exception.getMessage());
-                apiError.setStatus(400);
-
-                return ResponseEntity.status(400).body(apiError);
-        }
-
-        @ExceptionHandler(NotFoundException.class)
-        ResponseEntity<ApiError> handleEntityNotFoundException(
-                        NotFoundException exception, HttpServletRequest request) {
-                ApiError apiError = new ApiError();
-                apiError.setPath(request.getRequestURI());
-                apiError.setMessage(exception.getMessage());
-                apiError.setStatus(404);
-
-                return ResponseEntity.status(404).body(apiError);
-        }
 }
