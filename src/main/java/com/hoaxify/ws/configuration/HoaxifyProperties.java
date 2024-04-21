@@ -11,6 +11,16 @@ public class HoaxifyProperties {
 
     private Client client;
 
+    private Storege storage = new Storege();
+
+    public Storege getStorage() {
+        return storage;
+    }
+
+    public void setStorage(Storege storage) {
+        this.storage = storage;
+    }
+
     public static record Email(
             String username,
             String password,
@@ -41,4 +51,24 @@ public class HoaxifyProperties {
         this.client = client;
     }
 
+    public static class Storege {
+        String root = "uploads";
+        String profile = "profile";
+
+        public String getRoot() {
+            return root;
+        }
+
+        public void setRoot(String root) {
+            this.root = root;
+        }
+
+        public String getProfile() {
+            return profile;
+        }
+
+        public void setProfile(String profile) {
+            this.profile = profile;
+        }
+    }
 }
