@@ -12,39 +12,40 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.hoaxify.ws.auth.exception.AuthenticationException;
 import com.hoaxify.ws.shared.Messages;
 import com.hoaxify.ws.user.exception.ActivationNotificationException;
-import com.hoaxify.ws.user.exception.AuthorizationException;
+// import com.hoaxify.ws.user.exception.AuthorizationException;
 import com.hoaxify.ws.user.exception.InvalidTokenException;
 import com.hoaxify.ws.user.exception.NotFoundException;
 import com.hoaxify.ws.user.exception.NotUniqueEmailException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-
 @RestControllerAdvice
 public class ErrorHandler {
 
     @ExceptionHandler({
-        MethodArgumentNotValidException.class,
-        NotUniqueEmailException.class,
-        ActivationNotificationException.class,
-        InvalidTokenException.class,
-        NotFoundException.class,
-        AuthenticationException.class,
-        AuthorizationException.class
+            MethodArgumentNotValidException.class,
+            NotUniqueEmailException.class,
+            ActivationNotificationException.class,
+            InvalidTokenException.class,
+            NotFoundException.class,
+            AuthenticationException.class,
+            // AuthorizationException.class
     })
-    ResponseEntity<ApiError> handleException(Exception exception, HttpServletRequest request){
+    ResponseEntity<ApiError> handleException(Exception exception, HttpServletRequest request) {
         ApiError apiError = new ApiError();
         apiError.setPath(request.getRequestURI());
         apiError.setMessage(exception.getMessage());
-        if(exception instanceof MethodArgumentNotValidException) {
+        if (exception instanceof MethodArgumentNotValidException) {
             String message = Messages.getMessageForLocale("hoaxify.error.validation", LocaleContextHolder.getLocale());
             apiError.setMessage(message);
             apiError.setStatus(400);
-            var validationErrors = ((MethodArgumentNotValidException)exception).getBindingResult().getFieldErrors().stream().collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage, (existing, replacing) -> existing));
+            var validationErrors = ((MethodArgumentNotValidException) exception).getBindingResult().getFieldErrors()
+                    .stream().collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage,
+                            (existing, replacing) -> existing));
             apiError.setValidationErrors(validationErrors);
         } else if (exception instanceof NotUniqueEmailException) {
             apiError.setStatus(400);
-            apiError.setValidationErrors(((NotUniqueEmailException)exception).getValidationErrors());
+            apiError.setValidationErrors(((NotUniqueEmailException) exception).getValidationErrors());
         } else if (exception instanceof ActivationNotificationException) {
             apiError.setStatus(502);
         } else if (exception instanceof InvalidTokenException) {
@@ -53,11 +54,14 @@ public class ErrorHandler {
             apiError.setStatus(404);
         } else if (exception instanceof AuthenticationException) {
             apiError.setStatus(401);
-        } else if (exception instanceof AuthorizationException) {
-            String message = Messages.getMessageForLocale("hoaxify.create.user.forbidden", LocaleContextHolder.getLocale());
-            apiError.setMessage(message);
-            apiError.setStatus(403);
         }
+        // else if (exception instanceof AuthorizationException) {
+        // String message =
+        // Messages.getMessageForLocale("hoaxify.create.user.forbidden",
+        // LocaleContextHolder.getLocale());
+        // apiError.setMessage(message);
+        // apiError.setStatus(403);
+        // }
 
         return ResponseEntity.status(apiError.getStatus()).body(apiError);
     }
