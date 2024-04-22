@@ -40,4 +40,8 @@ public class AuthService {
         return authResponse;
     }
 
+    public void logout(String authorizatonHeader) {
+        tokenService.logout(authorizatonHeader);
+    }
+
 }
