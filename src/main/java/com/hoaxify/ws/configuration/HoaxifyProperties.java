@@ -13,6 +13,16 @@ public class HoaxifyProperties {
 
     private Storege storage = new Storege();
 
+    private String tokenType;
+
+    public String getTokenType() {
+        return tokenType;
+    }
+
+    public void setTokenType(String tokenType) {
+        this.tokenType = tokenType;
+    }
+
     public Storege getStorage() {
         return storage;
     }
