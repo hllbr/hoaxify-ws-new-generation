@@ -35,34 +35,17 @@ public class TokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null) {
-            User user = tokenService.verifyToken(authorizationHeader);
+        String tokenWithPrefix = getTokenWithPrefix(request);
+        if (tokenWithPrefix != null) {
+            User user = tokenService.verifyToken(tokenWithPrefix);
             if (user != null) {
                 if (!user.isActive()) {
                     String message = Messages
-                    .getMessageForLocale(
-                    "hoaxify.token.filter.user.disabled",
-                    LocaleContextHolder.getLocale());
+                            .getMessageForLocale(
+                                    "hoaxify.token.filter.user.disabled",
+                                    LocaleContextHolder.getLocale());
                     exceptionResolver.resolveException(request, response, null, new DisabledException(message));
                     return;
-                    //Alternative to exceptionResolver.resolveException
-                    // ApiError apiError = new ApiError();
-                    // apiError.setStatus(401);
-                    // String message = Messages
-                    //         .getMessageForLocale(
-                    //                 "hoaxify.token.filter.user.disabled",
-                    //                 LocaleContextHolder.getLocale());
-                    // apiError.setMessage(message);
-                    // apiError.setPath(request.getRequestURI());
-                    // ObjectMapper objectMapper = new ObjectMapper();
-
-                    // response.setStatus(401);
-                    // response.setContentType("application/json");
-                    // OutputStream os = response.getOutputStream();
-                    // objectMapper.writeValue(os, apiError);
-                    // os.flush();
-                    // return;
                 }
                 CurrentUser currentUser = new CurrentUser(user);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -75,4 +58,21 @@ public class TokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    private String getTokenWithPrefix(HttpServletRequest request) {
+        var tokenWithPrefix = request.getHeader("Authorization");
+        var cookies = request.getCookies();
+        if (cookies == null) {
+            return tokenWithPrefix;
+        }
+        for (var cookie : cookies) {
+            if (!cookie.getName().equals("hoax-token")) {
+                continue;
+            }
+            if (cookie.getValue() == null || cookie.getValue().isEmpty()) {
+                continue;
+            }
+            return "AnyPrefix " + cookie.getValue();
+        }
+        return tokenWithPrefix;
+    }
 }
