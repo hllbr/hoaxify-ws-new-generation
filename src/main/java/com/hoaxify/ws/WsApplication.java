@@ -20,6 +20,10 @@ public class WsApplication {
 	// @Profile("dev")
 	CommandLineRunner userCreator(UserRepository userRepository, PasswordEncoder passwordEncoder) {
 		return (args) -> {
+			var userInDB = userRepository.findByEmail("user1@test.com");
+			if (userInDB != null) {
+				return;
+			}
 			for (int i = 1; i < 25; i++) {
 				User user = new User();
 				user.setUsername("user" + i);
