@@ -20,7 +20,7 @@ public class WsApplication {
 	// @Profile("dev")
 	CommandLineRunner userCreator(UserRepository userRepository, PasswordEncoder passwordEncoder) {
 		return (args) -> {
-			for (int i = 0; i < 25; i++) {
+			for (int i = 1; i < 25; i++) {
 				User user = new User();
 				user.setUsername("user" + i);
 				user.setPassword(passwordEncoder.encode("P4ss$$^word?!*!hal"));
