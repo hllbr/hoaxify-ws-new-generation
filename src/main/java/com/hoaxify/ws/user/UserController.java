@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -64,5 +65,16 @@ public class UserController {
         @PreAuthorize("#id == principal.id")
         UserDTO updateUser(@PathVariable long id, @Valid @RequestBody UserUpdate userUpdate) {
                 return new UserDTO(userService.updateUser(id, userUpdate));
+        }
+
+        @DeleteMapping("api/v1/users/{id}")
+        @PreAuthorize("#id == principal.id")
+        GenericMessage deleteUser(@PathVariable long id ) {
+                userService.deleteUser(id);
+                  String message = Messages
+                                .getMessageForLocale(
+                                                "hoaxify.activate.user.delete.success",
+                                                LocaleContextHolder.getLocale());
+                return new GenericMessage(message);
         }
 }
