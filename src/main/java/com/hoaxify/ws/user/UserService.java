@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import com.hoaxify.ws.configuration.CurrentUser;
 import com.hoaxify.ws.email.EmailService;
 import com.hoaxify.ws.file.FileService;
+import com.hoaxify.ws.user.dto.PasswordResetRequest;
+import com.hoaxify.ws.user.dto.PasswordUpdate;
 import com.hoaxify.ws.user.dto.UserUpdate;
 import com.hoaxify.ws.user.exception.ActivationNotificationException;
 import com.hoaxify.ws.user.exception.InvalidTokenException;
@@ -91,10 +93,30 @@ public class UserService {
         if (inDB.getImage() != null) {
             fileService.deleteProfileImage(inDB.getImage());
         }
-        //alternative way to delete
+        // alternative way to delete
         // userRepository.delete(inDB);
         userRepository.deleteById(id);
-        
+
+    }
+
+    public void handleResetRequest(PasswordResetRequest passwordResetRequest) {
+        User inDB = findByEmail(passwordResetRequest.email());
+        if (inDB == null)
+            throw new NotFoundException(0);
+        inDB.setPasswordResetToken(UUID.randomUUID().toString());
+        userRepository.save(inDB);
+        emailService.sendPasswordResetEmail(inDB.getEmail(), inDB.getPasswordResetToken());
+    }
+
+    public void updatePassword(String token, PasswordUpdate passwordUpdate) {
+        User inDB = userRepository.findByPasswordResetToken(token);
+        if (inDB == null) {
+            throw new InvalidTokenException();
+        }
+        inDB.setPasswordResetToken(null);
+        inDB.setPassword(passwordEncoder.encode(passwordUpdate.password()));
+        inDB.setActive(true);
+        userRepository.save(inDB);
     }
 
 }
