@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hoaxify.ws.configuration.CurrentUser;
 import com.hoaxify.ws.shared.GenericMessage;
 import com.hoaxify.ws.shared.Messages;
+import com.hoaxify.ws.user.dto.PasswordResetRequest;
+import com.hoaxify.ws.user.dto.PasswordUpdate;
 import com.hoaxify.ws.user.dto.UserCreate;
 import com.hoaxify.ws.user.dto.UserDTO;
 import com.hoaxify.ws.user.dto.UserUpdate;
@@ -56,25 +58,42 @@ public class UserController {
                 return userService.getUsers(page, currentUser).map(UserDTO::new);
         }
 
-        @GetMapping("api/v1/users/{id}")
+        @GetMapping("/api/v1/users/{id}")
         UserDTO getUserById(@PathVariable long id) {
                 return new UserDTO(userService.getUser(id));
         }
 
-        @PutMapping("api/v1/users/{id}")
+        @PutMapping("/api/v1/users/{id}")
         @PreAuthorize("#id == principal.id")
         UserDTO updateUser(@PathVariable long id, @Valid @RequestBody UserUpdate userUpdate) {
                 return new UserDTO(userService.updateUser(id, userUpdate));
         }
 
-        @DeleteMapping("api/v1/users/{id}")
+        @DeleteMapping("/api/v1/users/{id}")
         @PreAuthorize("#id == principal.id")
-        GenericMessage deleteUser(@PathVariable long id ) {
+        GenericMessage deleteUser(@PathVariable long id) {
                 userService.deleteUser(id);
-                  String message = Messages
-                                .getMessageForLocale(
-                                                "hoaxify.activate.user.delete.success",
-                                                LocaleContextHolder.getLocale());
+                String message = Messages.getMessageForLocale(
+                                "hoaxify.activate.user.delete.success",
+                                LocaleContextHolder.getLocale());
+                return new GenericMessage(message);
+        }
+
+        @PostMapping("/api/v1/users/password-reset")
+        GenericMessage passwordResetRequest(@Valid @RequestBody PasswordResetRequest passwordResetRequest) {
+                userService.handleResetRequest(passwordResetRequest);
+                String message = Messages.getMessageForLocale(
+                                "hoaxify.activate.user.password.reset.success",
+                                LocaleContextHolder.getLocale());
+                return new GenericMessage(message);
+        }
+
+        @PatchMapping("/api/v1/users/{token}/password")
+        GenericMessage setPassword(@PathVariable String token, @Valid @RequestBody PasswordUpdate passwordUpdate) {
+                userService.updatePassword(token, passwordUpdate);
+                String message = Messages.getMessageForLocale(
+                                "hoaxify.activate.user.password.updated.success",
+                                LocaleContextHolder.getLocale());
                 return new GenericMessage(message);
         }
 }

@@ -14,6 +14,7 @@ import com.hoaxify.ws.shared.Messages;
 import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.springframework.context.MessageSource;
 
 @Service
 public class EmailService {
@@ -22,6 +23,9 @@ public class EmailService {
 
     @Autowired
     HoaxifyProperties hoaxifyProperties;
+
+    @Autowired
+    MessageSource messageSource;
 
     @PostConstruct
     public void initialize() {
@@ -73,4 +77,23 @@ public class EmailService {
         this.mailSender.send(mimeMessage);
     }
 
+    public void sendPasswordResetEmail(String email, String passwordResetToken) {
+        String passwordResetUrl = hoaxifyProperties.getClient().host() + "/password-reset/set?tk=" + passwordResetToken;
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper message = new MimeMessageHelper(mimeMessage, "UTF-8");
+        var title = "Reset your password";
+        String clickHere = Messages.getMessageForLocale("hoaxify.mail.click.here",
+                LocaleContextHolder.getLocale());
+        var mailBody = activationEmail.replace("${url}", passwordResetUrl).replace("${title}", title)
+                .replace("${clickHere}", clickHere);
+        try {
+            message.setFrom(hoaxifyProperties.getEmail().from());
+            message.setTo(email);
+            message.setSubject(title);
+            message.setText(mailBody, true);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+        this.mailSender.send(mimeMessage);
+    }
 }
